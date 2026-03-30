@@ -14,10 +14,15 @@
         <nav>
             <a href="/">Browse Events</a>
             {% if session.get('user_id') %}
-                <a href="/admin">Dashboard</a>
-                <a href="/api/auth/logout" style="color: var(--coral);">Logout</a>
+                {% if session.get('role') == 'admin' %}
+                    <a href="/admin">Admin Console</a>
+                {% else %}
+                    <span style="font-size: 0.85rem; font-weight: 850; color: var(--text-muted); cursor: default;">Hello, {{ session.get('username') }}</span>
+                {% endif %}
+                <a href="/api/auth/logout" style="color: var(--coral); font-weight: 800;">Logout</a>
             {% else %}
-                <a href="/login" style="font-size: 0.75rem; letter-spacing: 0.1em; color: var(--black);">Sign In</a>
+                <a href="/login" style="font-size: 0.85rem; font-weight: 800; color: var(--black); text-transform: uppercase; letter-spacing: 0.1em;">Sign In</a>
+                <a href="/signup" style="font-size: 0.85rem; font-weight: 800; color: var(--coral); margin-left: 2rem; text-transform: uppercase; letter-spacing: 0.1em;">Sign Up</a>
             {% endif %}
         </nav>
     </header>

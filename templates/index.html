@@ -43,37 +43,46 @@
         <nav>
             <a href="/">Browse Events</a>
             {% if session.get('user_id') %}
-                <a href="/admin">Dashboard</a>
+                {% if session.get('role') == 'admin' %}
+                    <a href="/admin">Admin Console</a>
+                {% else %}
+                    <span style="font-size: 0.9rem; font-weight: 850; color: var(--text-muted); cursor: default; margin-right: 1.5rem;">Hello, {{ session.get('username') }}</span>
+                {% endif %}
                 <a href="/api/auth/logout" style="color: var(--coral);">Logout</a>
             {% else %}
-                <a href="/login" class="btn btn-ghost" style="padding: 0.5rem 1.2rem; border-radius: 0.2rem;">Sign In</a>
+                <a href="/login" class="btn btn-ghost" style="padding: 0.6rem 1.6rem; border-radius: 0.25rem;">Sign In</a>
+                <a href="/signup" class="btn btn-primary" style="padding: 0.6rem 1.6rem; border-radius: 0.25rem;">Join Now</a>
             {% endif %}
         </nav>
     </header>
 
-    <div class="hero">
-        <div class="container">
-            <span>MEC CAMPUS MANAGEMENT SYSTEM</span>
-            <h1>Discover<br>Your Next<br>Event</h1>
-            <div style="display: flex; gap: 1.5rem; justify-content: center; margin-top: 4rem;">
+    <div class="hero" style="padding: 16rem 0 10rem; text-align: center; position: relative; background: var(--paper);">
+        <div class="container fade-in">
+            <span style="color: var(--coral); font-weight: 850; font-size: 0.75rem; letter-spacing: 0.3em; text-transform: uppercase; margin-bottom: 3rem; display: block;">MEC CAMPUS MANAGEMENT SYSTEM</span>
+            <h1 style="font-size: 7.5rem; font-weight: 900; letter-spacing: -0.05em; line-height: 0.85; color: var(--black); margin-bottom: 4.5rem;">Experience<br>The Next<br>Generation</h1>
+            <p style="color: var(--text-muted); font-size: 1.25rem; max-width: 650px; margin: 0 auto 5rem; line-height: 1.6;">Discover world-class hackathons, workshops, and seminars happening at Government Model Engineering College.</p>
+            <div style="display: flex; gap: 2rem; justify-content: center; margin-top: 4rem;">
                 <button class="btn btn-primary" onclick="document.getElementById('events').scrollIntoView({behavior:'smooth'})">Explore Events</button>
                 <button class="btn btn-ghost" onclick="window.location.href='/admin'">Admin Access</button>
             </div>
         </div>
     </div>
 
-    <div class="container" id="events" style="margin-bottom: 8rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem;">
-            <h2 style="font-size: 2rem; font-weight: 800;">Featured Highlights</h2>
-            <div style="display: flex; gap: 1rem;">
-                <button class="btn btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">All</button>
-                <button class="btn btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Workshops</button>
-                <button class="btn btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Hackathons</button>
+    <div class="container" id="events" style="margin-bottom: 12rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 6rem; border-bottom: 1.5px solid var(--stone); padding-bottom: 4rem;">
+            <div>
+                <h2 style="font-size: 3.5rem; font-weight: 900; letter-spacing: -0.04em;">Featured Highlights</h2>
+                <p style="color: var(--text-muted); font-size: 1.1rem; margin-top: 0.5rem; font-weight: 500;">Curated events for high-potential students.</p>
+            </div>
+            <div style="display: flex; gap: 1.5rem;">
+                <button class="btn btn-ghost" style="padding: 0.6rem 1.25rem; font-size: 0.75rem; border-color: var(--coral); color: var(--coral);">All</button>
+                <button class="btn btn-ghost" style="padding: 0.6rem 1.25rem; font-size: 0.75rem;">Workshops</button>
+                <button class="btn btn-ghost" style="padding: 0.6rem 1.25rem; font-size: 0.75rem;">Hackathons</button>
             </div>
         </div>
 
         <div id="event-list" class="grid">
-            <!-- Dynamically Loaded Cards -->
+            <!-- Loaded via JS -->
             <div class="loading-skeleton"></div>
             <div class="loading-skeleton"></div>
             <div class="loading-skeleton"></div>

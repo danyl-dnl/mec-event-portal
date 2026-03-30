@@ -8,39 +8,44 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
-    <header>
+<body style="background: var(--paper);">
+    <header style="border-bottom: 1px solid var(--border);">
         <div class="logo" onclick="window.location.href='/'">EVENT PORTAL ADMIN</div>
         <nav>
-            <a href="/">Live Site</a>
-            <button class="btn btn-primary" onclick="showCreateModal()">
-                <i class="fas fa-plus"></i> New Event
-            </button>
-            <a href="/api/auth/logout" class="btn btn-ghost" style="border-radius: 0.25rem;">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </a>
+            <a href="/">Browse Events</a>
+            {% if session.get('user_id') %}
+                {% if session.get('role') == 'admin' %}
+                    <a href="/admin">Admin Console</a>
+                {% else %}
+                    <span style="font-size: 0.85rem; font-weight: 850; color: var(--text-muted); cursor: default;">Hello, {{ session.get('username') }}</span>
+                {% endif %}
+                <a href="/api/auth/logout" style="color: var(--coral); font-weight: 800;">Logout</a>
+            {% else %}
+                <a href="/login" style="font-size: 0.85rem; font-weight: 800; color: var(--black); text-transform: uppercase; letter-spacing: 0.1em;">Sign In</a>
+                <a href="/signup" style="font-size: 0.85rem; font-weight: 800; color: var(--coral); margin-left: 2rem; text-transform: uppercase; letter-spacing: 0.1em;">Sign Up</a>
+            {% endif %}
         </nav>
     </header>
 
-    <div class="container" style="max-width: 1100px; padding-top: 5rem;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem;">
+    <div class="container" style="max-width: 1300px; padding-top: 12rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 5rem; border-bottom: 1.5px solid var(--stone); padding-bottom: 4rem;">
             <div>
-                <h1 style="font-size: 2.5rem; font-weight: 800; letter-spacing: -0.04em;">Event Management</h1>
-                <p style="color: var(--text-muted); font-size: 1.1rem;">Manage registrations, update event details, and see real-time statistics.</p>
+                <h1 style="font-size: 3.5rem; font-weight: 900; letter-spacing: -0.05em; color: var(--black);">Console Dashboard</h1>
+                <p style="color: var(--text-muted); font-size: 1.1rem; margin-top: 0.5rem; font-weight: 500;">Manage your campus events and real-time participation metrics.</p>
             </div>
-            <div style="text-align: right; color: var(--success); font-weight: 600; font-size: 0.9rem;">
-                <i class="fas fa-circle" style="font-size: 0.5rem; vertical-align: middle;"></i> MongoDB Cloud Active
+            <div style="text-align: right; color: var(--black); font-weight: 850; font-size: 0.75rem; background: var(--stone); padding: 0.6rem 1.4rem; border-radius: 0.25rem; letter-spacing: 0.1em; text-transform: uppercase;">
+                <i class="fas fa-circle" style="font-size: 0.5rem; vertical-align: middle; margin-right: 0.5rem; color: var(--coral);"></i> System Online
             </div>
         </div>
 
-        <div class="control-panel">
+        <div class="table-panel fade-in">
             <table id="admin-table">
                 <thead>
                     <tr>
-                        <th width="40%">Event Name & Category</th>
-                        <th width="20%">Date & Venue</th>
+                        <th width="40%">Event Identity</th>
+                        <th width="20%">Schedule & Venue</th>
                         <th width="20%">Capacity Status</th>
-                        <th width="20%" style="text-align: right;">Actions</th>
+                        <th width="20%" style="text-align: right;">Operations</th>
                     </tr>
                 </thead>
                 <tbody id="admin-table-body">

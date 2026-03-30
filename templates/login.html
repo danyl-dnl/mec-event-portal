@@ -3,40 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Management Console | Event Portal</title>
+    <title>Log In | Event Portal</title>
     <link rel="stylesheet" href="/static/css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body style="background: var(--paper);">
+<body style="background: var(--bg-deep);">
     <header>
         <div class="logo" style="cursor:pointer" onclick="window.location.href='/'">EVENT PORTAL</div>
     </header>
 
-    <div class="container fade-in" style="padding-top: 10rem;">
-        <div class="form-card" style="margin: 0 auto;">
-            <span style="color: var(--coral); font-weight: 850; font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase;">ADMINISTRATION ACCESS</span>
-            <h1 style="font-size: 3rem; font-weight: 900; letter-spacing: -0.06em; margin: 1.5rem 0; color:var(--black);">Authenticate</h1>
-            <p style="color: rgba(0,0,0,0.4); font-size: 1rem; margin-bottom: 4rem;">Enter your management credentials to access the console.</p>
+    <div class="container fade-in" style="padding-top: 14rem;">
+        <div class="form-card" style="margin: 0 auto; max-width: 480px; position: relative;">
+            <!-- Glow Effect -->
+            <div style="position: absolute; top: -50px; left: -50px; width: 100px; height: 100px; background: var(--primary); filter: blur(80px); opacity: 0.3;"></div>
+            
+            <span style="color: var(--primary); font-weight: 850; font-size: 0.75rem; letter-spacing: 0.3em; text-transform: uppercase; margin-bottom: 1rem; display: block;">SECURE ACCESS</span>
+            <h1 style="font-size: 3.5rem; font-weight: 900; letter-spacing: -0.06em; margin-bottom: 1.5rem; color:var(--text-main);">Authentication</h1>
+            <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 4rem;">Access your campus event ecosystem.</p>
             
             <form id="login-form">
                 <div class="form-group">
-                    <label>Email Address</label>
-                    <input type="email" id="email" required placeholder="admin@mec.in">
+                    <label>Identity / Email</label>
+                    <input type="email" id="email" required placeholder="name@mec.ac.in">
                 </div>
                 <div class="form-group">
-                    <label>Security Key</label>
+                    <label>Secret Key</label>
                     <input type="password" id="password" required placeholder="••••••••">
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%; justify-content: center; margin-top: 2rem;">Log In</button>
+                <button type="submit" class="btn btn-primary" style="width:100%; justify-content: center; margin-top: 2rem; padding: 1.25rem;">Unlock Portal</button>
             </form>
             
-            <div id="error" style="color: var(--coral); margin-top: 2rem; font-size: 0.8rem; font-weight: 900; text-align: center; text-transform: uppercase; display: none;">
+            <div id="error" style="color: var(--secondary); margin-top: 2.5rem; font-size: 0.85rem; font-weight: 700; text-align: center; text-transform: uppercase; display: none; background: rgba(244, 63, 94, 0.1); padding: 1rem; border-radius: 0.5rem; border: 1px solid rgba(244, 63, 94, 0.2);">
                 <i class="fas fa-exclamation-triangle"></i> Verification Failed
             </div>
             
-            <div style="margin-top: 5rem; padding-top: 3rem; border-top: 1px solid var(--stone); text-align: center;">
-                <p style="font-size: 0.7rem; color: rgba(0,0,0,0.3); font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;">Default: admin@mec.in / admin123</p>
+            <div style="margin-top: 4rem; text-align: center;">
+                <p style="font-size: 1rem; color: var(--text-muted);">New to the portal? <a href="/signup" style="color: var(--primary); font-weight: 700; text-decoration: none; border-bottom: 1px solid var(--primary);">Join the Movement</a></p>
+                <div style="margin-top: 6rem; padding-top: 2.5rem; border-top: 1px solid var(--border);">
+                     <p style="font-size: 0.7rem; color: var(--text-muted); opacity: 0.5; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;">MEC Event Portal | Campus Management v2.0</p>
+                </div>
             </div>
         </div>
     </div>
@@ -48,7 +54,7 @@
             const errDiv = document.getElementById('error');
             
             btn.disabled = true;
-            btn.innerText = 'Syncing...';
+            btn.innerText = 'Loging in...';
             errDiv.style.display = 'none';
 
             const payload = {
@@ -63,9 +69,16 @@
                     body: JSON.stringify(payload)
                 });
                 
+                const data = await res.json();
+                
                 if (res.ok) {
-                    window.location.href = '/admin';
+                    if (data.role === 'admin') {
+                        window.location.href = '/admin';
+                    } else {
+                        window.location.href = '/';
+                    }
                 } else {
+                    errDiv.innerText = data.error || 'Verification Failed';
                     errDiv.style.display = 'block';
                     btn.disabled = false;
                     btn.innerText = 'Log In';
@@ -73,6 +86,7 @@
             } catch (err) {
                 alert('Database Connection Failed.');
                 btn.disabled = false;
+                btn.innerText = 'Log In';
             }
         };
     </script>

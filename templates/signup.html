@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Event Portal | Create Student Account</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body style="background: var(--paper);">
+    <header>
+        <div class="logo" style="cursor:pointer" onclick="window.location.href='/'">EVENT PORTAL</div>
+    </header>
+
+    <div class="container fade-in" style="padding-top: 8rem; padding-bottom: 8rem;">
+        <div class="form-card" style="margin: 0 auto; max-width: 650px;">
+            <span style="color: var(--coral); font-weight: 900; font-size: 0.75rem; letter-spacing: 0.3em; text-transform: uppercase; margin-bottom: 1.5rem; display: block;">STUDENT ONBOARDING</span>
+            <h1 style="font-size: 3.5rem; font-weight: 900; letter-spacing: -0.06em; margin-bottom: 1.5rem; color:var(--black);">Create Profile</h1>
+            <p style="color: var(--text-muted); font-size: 1.15rem; margin-bottom: 4.5rem; font-weight: 500;">Join the leading campus event ecosystem.</p>
+            
+            <form id="signup-form">
+                <div class="form-group">
+                    <label>Full Identity</label>
+                    <input type="text" id="name" required placeholder="John Doe">
+                </div>
+                <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem;">
+                    <div class="form-group">
+                        <label>KTU Identity</label>
+                        <input type="text" id="ktu_id" required placeholder="MEC21CS001">
+                    </div>
+                    <div class="form-group">
+                        <label>Academic Year</label>
+                        <select id="year" required style="width: 100%;">
+                            <option value="1">First Year</option>
+                            <option value="2">Second Year</option>
+                            <option value="3">Third Year</option>
+                            <option value="4">Fourth Year</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Department / Branch</label>
+                    <input type="text" id="branch" required placeholder="Computer Science">
+                </div>
+                <div class="form-group">
+                    <label>Official Email</label>
+                    <input type="email" id="email" required placeholder="student@mec.ac.in">
+                </div>
+                <div class="form-group">
+                    <label>Security Password</label>
+                    <input type="password" id="password" required placeholder="••••••••">
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width:100%; justify-content: center; margin-top: 2rem; padding: 1.25rem;">Establish Account</button>
+            </form>
+            
+            <div id="error" style="color: #fff; margin-top: 2.5rem; font-size: 0.85rem; font-weight: 800; text-align: center; text-transform: uppercase; display: none; background: var(--coral); padding: 1.25rem; border-radius: 0.25rem;">
+                <i class="fas fa-exclamation-triangle"></i> Registration Failed
+            </div>
+            
+            <div style="margin-top: 5rem; text-align: center;">
+                <p style="font-size: 1.05rem; color: var(--black); font-weight: 500;">Returning member? <a href="/login" style="color: var(--coral); font-weight: 850; text-decoration: none; border-bottom: 2px solid var(--coral);">Secure Login</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('signup-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const errDiv = document.getElementById('error');
+            
+            btn.disabled = true;
+            btn.innerText = 'Creating Profile...';
+            errDiv.style.display = 'none';
+
+            const payload = {
+                name: document.getElementById('name').value,
+                ktu_id: document.getElementById('ktu_id').value,
+                year: document.getElementById('year').value,
+                branch: document.getElementById('branch').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            };
+
+            try {
+                const res = await fetch('/api/auth/signup', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    window.location.href = '/';
+                } else {
+                    errDiv.innerText = data.error || 'Registration Failed';
+                    errDiv.style.display = 'block';
+                    btn.disabled = false;
+                    btn.innerText = 'Log In';
+                }
+            } catch (err) {
+                alert('Database Connection Failed.');
+                btn.disabled = false;
+                btn.innerText = 'Log In';
+            }
+        };
+    </script>
+</body>
+</html>

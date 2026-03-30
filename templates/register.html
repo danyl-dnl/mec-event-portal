@@ -67,6 +67,24 @@
 
     <script src="/static/js/app.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch('/api/auth/me');
+                if (res.ok) {
+                    const user = await res.json();
+                    if (user.role === 'student') {
+                        document.getElementById('ktu_id').value = user.ktu_id || '';
+                        document.getElementById('full_name').value = user.name || '';
+                        document.getElementById('email').value = user.email || '';
+                        document.getElementById('branch').value = user.branch || '';
+                        document.getElementById('year').value = user.year || '1';
+                    }
+                }
+            } catch (err) {
+                console.error("Auth check failed", err);
+            }
+        });
+
         document.getElementById('reg-form').onsubmit = async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button');

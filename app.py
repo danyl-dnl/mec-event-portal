@@ -71,6 +71,10 @@ def registration_page(event_id):
 def login_page():
     return render_template('login.html')
 
+@app.route('/signup')
+def signup_page():
+    return render_template('signup.html')
+
 # ----------------- API Routes: Events (CRUD) -----------------
 @app.route('/api/events', methods=['GET'])
 def get_events():
@@ -127,7 +131,7 @@ def delete_event(event_id):
 
 # ----------------- API Routes: Auth & Users -----------------
 @app.route('/api/auth/login', methods=['POST'])
-def admin_login():
+def login():
     data = request.json
     email = data.get("email")
     password = data.get("password")
@@ -137,10 +141,84 @@ def admin_login():
     if admin:
         session['user_id'] = str(admin["_id"])
         session['role'] = "admin"
+        session['username'] = "Administrator"
         return jsonify({"message": "Admin Login Success", "role": "admin"})
         
-    # 2. Check Student Collection (Optional: expand if needed)
+    # 2. Check Student Collection
+    student = db.students.find_one({"email": email, "password": password})
+    if student:
+        session['user_id'] = str(student["_id"])
+        session['role'] = "student"
+        session['username'] = student.get("name", "Student")
+        session['ktu_id'] = student.get("ktu_id")
+        return jsonify({"message": "Student Login Success", "role": "student"})
+
     return jsonify({"error": "Invalid credentials"}), 401
+
+@app.route('/api/auth/signup', methods=['POST'])
+def signup():
+    data = request.json
+    ktu_id = data.get("ktu_id")
+    email = data.get("email")
+    password = data.get("password")
+    name = data.get("name")
+    branch = data.get("branch")
+    year = data.get("year")
+
+    # Check if student already exists by email or KTU ID
+    if db.students.find_one({"$or": [{"email": email}, {"ktu_id": ktu_id}]}):
+        return jsonify({"error": "User with this Email or KTU ID already exists"}), 400
+
+    new_student = {
+        "ktu_id": ktu_id,
+        "email": email,
+        "password": password, # In a real app, hash this!
+        "name": name,
+        "branch": branch,
+        "year": year,
+        "created_at": datetime.utcnow(),
+        "last_active": datetime.utcnow()
+    }
+    
+    result = db.students.insert_one(new_student)
+    
+    # Auto-login after signup
+    session['user_id'] = str(result.inserted_id)
+    session['role'] = "student"
+    session['username'] = name
+    session['ktu_id'] = ktu_id
+    
+    return jsonify({"message": "Student Registration Success", "role": "student"}), 201
+
+@app.route('/api/auth/me', methods=['GET'])
+def get_current_user():
+    if 'user_id' not in session:
+        return jsonify({"error": "Not authenticated"}), 401
+    
+    user_id = session['user_id']
+    role = session['role']
+    
+    if role == 'admin':
+        user = db.admins.find_one({"_id": ObjectId(user_id)})
+        if user:
+            return jsonify({
+                "role": "admin",
+                "email": user.get("email"),
+                "name": "Administrator"
+            })
+    else:
+        user = db.students.find_one({"_id": ObjectId(user_id)})
+        if user:
+            return jsonify({
+                "role": "student",
+                "email": user.get("email"),
+                "name": user.get("name"),
+                "ktu_id": user.get("ktu_id"),
+                "branch": user.get("branch"),
+                "year": user.get("year")
+            })
+            
+    return jsonify({"error": "User not found"}), 404
 
 @app.route('/api/auth/logout')
 def logout():
@@ -203,4 +281,5 @@ def get_event_registrations(event_id):
     return jsonify(regs)
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # Using use_reloader=False to prevent WinError 10038 on Windows machines
+    app.run(debug=True, port=5000, use_reloader=False)
