@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Portal | Discover Your Next Experience</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .hero {
+            background-color: var(--paper);
+            padding: 12rem 0;
+            text-align: center;
+        }
+        .hero span {
+            color: var(--coral);
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+        .hero h1 {
+            font-size: 6rem;
+            font-weight: 800;
+            letter-spacing: -0.06em;
+            line-height: 0.85;
+            color: var(--black);
+            margin-top: 2rem;
+            margin-bottom: 3rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2.5rem;
+            margin-top: 4rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo" onclick="window.location.href='/'">EVENT PORTAL</div>
+        <nav>
+            <a href="/">Browse Events</a>
+            {% if session.get('user_id') %}
+                <a href="/admin">Dashboard</a>
+                <a href="/api/auth/logout" style="color: var(--coral);">Logout</a>
+            {% else %}
+                <a href="/login" class="btn btn-ghost" style="padding: 0.5rem 1.2rem; border-radius: 0.2rem;">Sign In</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <div class="hero">
+        <div class="container">
+            <span>MEC CAMPUS MANAGEMENT SYSTEM</span>
+            <h1>Discover<br>Your Next<br>Event</h1>
+            <div style="display: flex; gap: 1.5rem; justify-content: center; margin-top: 4rem;">
+                <button class="btn btn-primary" onclick="document.getElementById('events').scrollIntoView({behavior:'smooth'})">Explore Events</button>
+                <button class="btn btn-ghost" onclick="window.location.href='/admin'">Admin Access</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="events" style="margin-bottom: 8rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem;">
+            <h2 style="font-size: 2rem; font-weight: 800;">Featured Highlights</h2>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">All</button>
+                <button class="btn btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Workshops</button>
+                <button class="btn btn-ghost" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Hackathons</button>
+            </div>
+        </div>
+
+        <div id="event-list" class="grid">
+            <!-- Dynamically Loaded Cards -->
+            <div class="loading-skeleton"></div>
+            <div class="loading-skeleton"></div>
+            <div class="loading-skeleton"></div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const list = document.getElementById('event-list');
+            try {
+                const res = await fetch('/api/events');
+                const events = await res.json();
+                list.innerHTML = '';
+
+                if (events.length === 0) {
+                    list.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 5rem; border: 1px dashed var(--border); border-radius: 1.5rem;">
+                        <h3>No events scheduled yet.</h3>
+                        <p style="color: var(--text-muted);">Check back later or <a href="/admin" style="color: var(--primary);">create one</a> now.</p>
+                    </div>`;
+                    return;
+                }
+
+                events.forEach(e => {
+                    const card = createEventCard(e);
+                    list.appendChild(card);
+                });
+            } catch (err) {
+                list.innerHTML = '<p style="color: var(--error);">Failed to load events. MongoDB Cloud might be unreachable.</p>';
+            }
+        });
+
+        function createEventCard(e) {
+            const card = document.createElement('div');
+            card.className = 'event-card';
+            card.onclick = () => window.location.href = `/event/${e._id}`;
+
+            // Category Icons
+            const icons = {
+                'Workshop': 'fa-tools',
+                'Hackathon': 'fa-code',
+                'Seminar': 'fa-microphone',
+                'Talk': 'fa-microphone',
+                'Comp': 'fa-trophy'
+            };
+            const icon = icons[e.category] || 'fa-calendar';
+
+            // Premium Image Placeholder Logic
+            const imageMap = {
+                'Workshop': 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80',
+                'Hackathon': 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=80',
+                'Seminar': 'https://images.unsplash.com/photo-1475721027187-4024733924f7?auto=format&fit=crop&w=800&q=80',
+                'Talk': 'https://images.unsplash.com/photo-1540575861501-7ce0e220475b?auto=format&fit=crop&w=800&q=80',
+                'Comp': 'https://images.unsplash.com/photo-1551818255-e6e10975bc17?auto=format&fit=crop&w=800&q=80'
+            };
+            const imgUrl = imageMap[e.category] || 'https://images.unsplash.com/photo-1540575861501-7ce0e220475b?auto=format&fit=crop&w=800&q=80';
+
+            card.innerHTML = `
+                <img src="${imgUrl}" alt="${e.name}">
+                <div class="card-body">
+                    <span class="tag">${e.category || 'Event'}</span>
+                    <h3 class="title">${e.name}</h3>
+                    <div class="meta-info">
+                        <div class="meta-item"><i class="fas ${icon}"></i>${e.location}</div>
+                        <div class="meta-item"><i class="far fa-clock"></i>${e.time}</div>
+                        <div class="meta-item"><i class="far fa-calendar-alt"></i>${e.date}</div>
+                    </div>
+                    ${updateProgressBar(e.seats_filled, e.total_seats)}
+                </div>
+            `;
+            return card;
+        }
+    </script>
+</body>
+</html>

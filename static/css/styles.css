@@ -1,0 +1,183 @@
+:root {
+    --paper: #F6F4F1;
+    --stone: #E4DED2;
+    --coral: #F95C4B;
+    --black: #000000;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', system-ui, sans-serif;
+}
+
+body {
+    background-color: var(--paper);
+    color: var(--black);
+    line-height: 1.6;
+}
+
+/* --- Layout --- */
+header {
+    background: rgba(246, 244, 241, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--stone);
+    padding: 1.5rem 8%;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+section {
+    padding: 10rem 0;
+}
+
+/* --- Components --- */
+.logo { 
+    font-weight: 950; 
+    font-size: 1.1rem; 
+    letter-spacing: -0.02em; 
+    text-transform: uppercase; 
+    cursor: pointer;
+}
+
+nav { display: flex; gap: 2.5rem; align-items: center; }
+nav a {
+    color: var(--black);
+    text-decoration: none;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    transition: 0.2s;
+}
+nav a:hover { color: var(--coral); }
+
+/* Buttons */
+.btn {
+    padding: 1.1rem 2.2rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.btn-primary { background: var(--black); color: #fff; }
+.btn-primary:hover { background: var(--coral); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+
+.btn-ghost { background: transparent; border: 1.5px solid var(--black); color: var(--black); }
+.btn-ghost:hover { background: var(--black); color: #fff; }
+
+.btn-coral { background: var(--coral); color: #fff; }
+
+/* Grid & Cards */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 3rem; margin-top: 4rem; }
+
+.event-card {
+    background: #fff;
+    border: 1px solid var(--stone);
+    overflow: hidden;
+    transition: 0.4s;
+}
+
+.event-card:hover { transform: translateY(-5px); border-color: var(--black); }
+.event-card img { width: 100%; height: 250px; object-fit: cover; }
+.card-body { padding: 2.5rem; }
+
+.tag {
+    background: var(--stone);
+    font-size: 0.65rem;
+    font-weight: 850;
+    padding: 0.4rem 0.75rem;
+    display: inline-block;
+    margin-bottom: 1.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.title { font-size: 1.6rem; font-weight: 800; margin-bottom: 1rem; letter-spacing: -0.02em; }
+
+.meta-info { color: rgba(0,0,0,0.6); font-size: 0.85rem; margin-bottom: 2rem; }
+.meta-item { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+.meta-item i { color: var(--coral); width: 16px; }
+
+/* Progress Bar */
+.progress-container { background: var(--paper); height: 3px; margin: 1.5rem 0; }
+.progress-bar { height: 100%; background: var(--coral); transition: 1s ease; }
+
+/* Forms */
+.form-card {
+    background: #fff;
+    padding: 5rem;
+    border: 1px solid var(--stone);
+    max-width: 600px;
+    margin: 10rem auto;
+}
+
+.form-group { margin-bottom: 2.5rem; }
+.form-group label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 850;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 1rem;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 1.25rem;
+    background: var(--paper);
+    border: 1px solid var(--stone);
+    font-size: 1rem;
+    outline: none;
+}
+
+input:focus { border-color: var(--black); }
+
+/* Table Dashboard */
+.table-panel { background: #fff; border: 1px solid var(--stone); margin-top: 4rem; overflow: hidden; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; padding: 1.5rem 2rem; background: var(--stone); font-size: 0.75rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; }
+td { padding: 1.5rem 2rem; border-bottom: 1px solid var(--paper); font-size: 0.95rem; }
+
+/* Modal */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(246, 244, 241, 0.98);
+    z-index: 10000;
+    padding: 10vh 2rem;
+    overflow-y: auto;
+}
+
+.modal-content {
+    background: #fff;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 5rem;
+    border: 1px solid var(--stone);
+}
+
+/* Animations */
+.fade-in { animation: fadeIn 0.6s ease-out forwards; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }

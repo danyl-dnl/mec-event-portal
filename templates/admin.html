@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Management Console | Event Portal</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo" onclick="window.location.href='/'">EVENT PORTAL ADMIN</div>
+        <nav>
+            <a href="/">Live Site</a>
+            <button class="btn btn-primary" onclick="showCreateModal()">
+                <i class="fas fa-plus"></i> New Event
+            </button>
+            <a href="/api/auth/logout" class="btn btn-ghost" style="border-radius: 0.25rem;">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </nav>
+    </header>
+
+    <div class="container" style="max-width: 1100px; padding-top: 5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem;">
+            <div>
+                <h1 style="font-size: 2.5rem; font-weight: 800; letter-spacing: -0.04em;">Event Management</h1>
+                <p style="color: var(--text-muted); font-size: 1.1rem;">Manage registrations, update event details, and see real-time statistics.</p>
+            </div>
+            <div style="text-align: right; color: var(--success); font-weight: 600; font-size: 0.9rem;">
+                <i class="fas fa-circle" style="font-size: 0.5rem; vertical-align: middle;"></i> MongoDB Cloud Active
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <table id="admin-table">
+                <thead>
+                    <tr>
+                        <th width="40%">Event Name & Category</th>
+                        <th width="20%">Date & Venue</th>
+                        <th width="20%">Capacity Status</th>
+                        <th width="20%" style="text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-table-body">
+                    <!-- Rows will be injected by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div id="event-modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="modal-title" style="font-size: 2rem; margin-bottom: 2rem; font-weight: 800;">Create Event</h2>
+            <form id="admin-form">
+                <input type="hidden" id="edit-id">
+                <div class="input-group">
+                    <label>Event Name</label>
+                    <input type="text" id="name" placeholder="E.g., World Hackathon 2026" required>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="input-group">
+                        <label>Date</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Time</label>
+                        <input type="text" id="time" placeholder="10:00 AM" required>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem;">
+                    <div class="input-group">
+                        <label>Venue / Location</label>
+                        <input type="text" id="location" placeholder="Auditorium / Zoom" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Max Capacity</label>
+                        <input type="number" id="total_seats" placeholder="100" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Category</label>
+                    <select id="category">
+                        <option value="Workshop">Workshop</option>
+                        <option value="Hackathon">Hackathon</option>
+                        <option value="Talk">Seminar / Talk</option>
+                        <option value="Comp">Competition</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Short Description (Supports Markdown)</label>
+                    <textarea id="description" rows="4" placeholder="Briefly describe what students will learn..."></textarea>
+                </div>
+
+                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                    <button type="button" class="btn btn-ghost" onclick="closeModal('event-modal-overlay')">Discard</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', refreshEvents);
+
+        async function refreshEvents() {
+            const tbody = document.getElementById('admin-table-body');
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 5rem;"><div class="loading-skeleton" style="height: 50px;"></div></td></tr>';
+            
+            try {
+                const res = await fetch('/api/events');
+                const events = await res.json();
+                tbody.innerHTML = '';
+                
+                events.forEach(e => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>
+                            <div style="font-weight:700; font-size:1.1rem; color:var(--black);">${e.name}</div>
+                            <div style="font-size:0.75rem; color:var(--text-muted); opacity:0.8;">${e.category}</div>
+                        </td>
+                        <td>
+                            <div style="font-size:0.9rem;">${e.date}</div>
+                            <div style="font-size:0.8rem; color:var(--text-muted);">${e.location}</div>
+                        </td>
+                        <td>${updateProgressBar(e.seats_filled, e.total_seats)}</td>
+                        <td style="text-align:right;">
+                            <div class="action-btns" style="justify-content: flex-end;">
+                                <button class="btn btn-ghost" style="padding:0.5rem;" onclick="startEdit('${e._id}')"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-ghost" style="padding:0.5rem; color:var(--error); border-color:rgba(239,68,68,0.2)" onclick="confirmDelete('${e._id}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--error);">Failed to load events. Check MongoDB Atlas.</td></tr>';
+            }
+        }
+
+        function showCreateModal() {
+            document.getElementById('edit-id').value = '';
+            document.getElementById('admin-form').reset();
+            document.getElementById('modal-title').innerText = 'Create Event';
+            openModal('event-modal-overlay');
+        }
+
+        async function startEdit(id) {
+            const res = await fetch(`/api/events/${id}`);
+            const e = await res.json();
+            document.getElementById('edit-id').value = e._id;
+            document.getElementById('name').value = e.name;
+            document.getElementById('date').value = e.date;
+            document.getElementById('time').value = e.time;
+            document.getElementById('location').value = e.location;
+            document.getElementById('total_seats').value = e.total_seats;
+            document.getElementById('category').value = e.category || 'Workshop';
+            document.getElementById('description').value = e.description || '';
+            
+            document.getElementById('modal-title').innerText = 'Edit Event Details';
+            openModal('event-modal-overlay');
+        }
+
+        document.getElementById('admin-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const data = {
+                name: document.getElementById('name').value,
+                date: document.getElementById('date').value,
+                time: document.getElementById('time').value,
+                location: document.getElementById('location').value,
+                total_seats: document.getElementById('total_seats').value,
+                category: document.getElementById('category').value,
+                description: document.getElementById('description').value
+            };
+
+            const url = id ? `/api/events/${id}` : '/api/events';
+            const method = id ? 'PUT' : 'POST';
+
+            const res = await fetch(url, {
+                method,
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                closeModal('event-modal-overlay');
+                refreshEvents();
+            }
+        }
+
+        async function confirmDelete(id) {
+            if (confirm('Delete this event? All registrations will be lost.')) {
+                await fetch(`/api/events/${id}`, { method: 'DELETE' });
+                refreshEvents();
+            }
+        }
+    </script>
+</body>
+</html>

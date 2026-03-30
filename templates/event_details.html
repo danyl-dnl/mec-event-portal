@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Details | Event Portal</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body style="background: var(--paper);">
+    <header>
+        <div class="logo" onclick="window.location.href='/'" style="cursor:pointer">EVENT PORTAL</div>
+        <nav>
+            <a href="/">Browse Events</a>
+            {% if session.get('user_id') %}
+                <a href="/admin">Dashboard</a>
+                <a href="/api/auth/logout" style="color: var(--coral);">Logout</a>
+            {% else %}
+                <a href="/login" style="font-size: 0.75rem; letter-spacing: 0.1em; color: var(--black);">Sign In</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <div class="container fade-in" style="max-width: 1000px; padding-top: 10rem; padding-bottom: 8rem;">
+        <div id="content">
+            <!-- Loaded via JS -->
+            <div class="loading-skeleton" style="height: 500px;"></div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        const eventId = "{{ event_id }}";
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const content = document.getElementById('content');
+            try {
+                const res = await fetch(`/api/events/${eventId}`);
+                const e = await res.json();
+                
+                if (e.error) {
+                    content.innerHTML = `<h1 style="color:var(--coral);">${e.error}</h1><a href="/" class="btn btn-ghost">Back to Home</a>`;
+                    return;
+                }
+
+                const isFull = e.seats_filled >= e.total_seats;
+
+                content.innerHTML = `
+                <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 5rem; align-items: start;">
+                    <div>
+                        <span class="tag">${e.category}</span>
+                        <h1 style="font-size: 4rem; font-weight: 850; letter-spacing: -0.06em; margin: 1.5rem 0; color:var(--black);">${e.name}</h1>
+                        <p style="font-size: 1.15rem; color: rgba(0,0,0,0.6); margin-bottom: 4rem; line-height: 1.8;">${e.description || 'No description provided.'}</p>
+                        
+                        <div style="background: #fff; padding: 3.5rem; border: 1px solid var(--stone); margin-bottom: 4rem;">
+                            <h3 style="font-size: 0.8rem; font-weight: 900; letter-spacing: 0.15em; margin-bottom: 2.5rem; text-transform: uppercase;">Event Information</h3>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;">
+                                <div><span style="font-size:0.65rem; color:rgba(0,0,0,0.4); font-weight:800; display:block; margin-bottom:0.75rem; letter-spacing:0.1em;">DATE</span><strong style="font-size:1.1rem;">${e.date}</strong></div>
+                                <div><span style="font-size:0.65rem; color:rgba(0,0,0,0.4); font-weight:800; display:block; margin-bottom:0.75rem; letter-spacing:0.1em;">TIME</span><strong style="font-size:1.1rem;">${e.time}</strong></div>
+                                <div style="grid-column:1/-1;">
+                                    <span style="font-size:0.65rem; color:rgba(0,0,0,0.4); font-weight:800; display:block; margin-bottom:0.75rem; letter-spacing:0.1em;">LOCATION</span>
+                                    <strong style="color:var(--coral); font-size:1.1rem;">${e.location}</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="background: var(--stone); padding: 2.5rem; border: 1px solid rgba(0,0,0,0.05);">
+                            <h4 style="font-size: 0.75rem; color: var(--black); font-weight: 900; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em;">MongoDB Advantage</h4>
+                            <p style="font-size: 0.9rem; color: rgba(0,0,0,0.6);">The <strong>${e.category}</strong> profile uses a flexible schema to store custom metadata without rigid SQL constraints.</p>
+                        </div>
+                    </div>
+
+                    <div style="position: sticky; top: 150px;">
+                        <div style="background: #fff; padding: 4rem; border: 1px solid var(--stone); border-top: 6px solid var(--coral);">
+                            <div style="text-align: center; margin-bottom: 3rem;">
+                                <h2 style="font-size: 4rem; font-weight: 900; letter-spacing: -0.05em; line-height: 1;">${e.total_seats - e.seats_filled}</h2>
+                                <p style="color: var(--black); font-weight: 850; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.2em; margin-top: 0.5rem;">Seats Available</p>
+                            </div>
+
+                            ${updateProgressBar(e.seats_filled, e.total_seats)}
+                            
+                            <div style="margin-top: 3rem;">
+                            ${isFull ? 
+                                `<button class="btn" style="width: 100%; justify-content: center; background: var(--stone); color: rgba(0,0,0,0.3); cursor: not-allowed;" disabled>Fully Booked</button>` :
+                                `<button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="window.location.href='/register/${eventId}'">Register Now</button>`
+                            }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            } catch (err) {
+                content.innerHTML = `<h1 style="color:var(--coral);">Connection error.</h1>`;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration | Event Portal</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body style="background: var(--paper);">
+    <header>
+        <div class="logo" style="cursor:pointer" onclick="window.location.href='/'">EVENT PORTAL</div>
+    </header>
+
+    <div class="container fade-in" style="max-width: 650px; padding-top: 10rem; padding-bottom: 10rem;">
+        <div id="registration-form-content">
+            <h1 style="font-size: 3rem; font-weight: 900; letter-spacing: -0.05em; margin-bottom: 0.75rem;">Join this Event</h1>
+            <p style="color: rgba(0,0,0,0.4); font-size: 1.1rem; margin-bottom: 4rem;">Fill out the information below to secure your registration.</p>
+            
+            <form id="reg-form" class="form-card" style="margin: 0; max-width: 100%;">
+                <input type="hidden" id="event-id" value="{{ event_id }}">
+                
+                <div class="form-group">
+                    <label>KTU ID</label>
+                    <input type="text" id="ktu_id" required placeholder="E.g., TVE20CS001">
+                </div>
+
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="full_name" required placeholder="John Doe">
+                </div>
+
+                <div class="form-group">
+                    <label>College Email</label>
+                    <input type="email" id="email" required placeholder="john@example.com">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 2rem;">
+                    <div class="form-group">
+                        <label>Branch</label>
+                        <input type="text" id="branch" required placeholder="CSE / EEE">
+                    </div>
+                    <div class="form-group">
+                        <label>Year</label>
+                        <select id="year">
+                            <option value="1">1st Year</option>
+                            <option value="2">2nd Year</option>
+                            <option value="3">3rd Year</option>
+                            <option value="4">4th Year</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 2rem;">Confirm Registration</button>
+                <p style="text-align: center; margin-top: 2rem;"><a href="/event/{{ event_id }}" style="color: rgba(0,0,0,0.4); text-decoration: none; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">Back to Event details</a></p>
+            </form>
+
+            <div id="success-message" style="display: none; text-align: center; padding: 6rem 3rem;">
+                <div style="font-size: 6rem; color: var(--coral); margin-bottom: 2rem;"><i class="fas fa-check-circle"></i></div>
+                <h2 style="font-size: 2.5rem; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 1rem;">Successfully Registered!</h2>
+                <p style="color: rgba(0,0,0,0.5); font-size: 1.1rem; max-width: 400px; margin: 0 auto 3rem;">We've added you to the event participant list. An official confirmation email will reach you soon.</p>
+                <a href="/" class="btn btn-primary" style="padding: 1.5rem 3rem;">Explore more Events</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        document.getElementById('reg-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerText;
+            btn.disabled = true;
+            btn.innerText = 'SYNCING WITH MONGODB...';
+
+            const data = {
+                event_id: document.getElementById('event-id').value,
+                ktu_id: document.getElementById('ktu_id').value,
+                full_name: document.getElementById('full_name').value,
+                email: document.getElementById('email').value,
+                branch: document.getElementById('branch').value,
+                year: document.getElementById('year').value
+            };
+
+            try {
+                const res = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+
+                if (res.ok) {
+                    document.getElementById('reg-form').style.display = 'none';
+                    document.getElementById('success-message').style.display = 'block';
+                    document.querySelector('#registration-form-content h1').style.display = 'none';
+                    document.querySelector('#registration-form-content p').style.display = 'none';
+                } else {
+                    alert(result.error || 'Registration failed. Check if you are already registered.');
+                    btn.disabled = false;
+                    btn.innerText = originalText;
+                }
+            } catch (err) {
+                alert('Connection to MongoDB failed.');
+                btn.disabled = false;
+                btn.innerText = originalText;
+            }
+        };
+    </script>
+</body>
+</html>
