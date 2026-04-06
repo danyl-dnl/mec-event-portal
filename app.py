@@ -10,6 +10,7 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 from functools import wraps
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__, 
             static_folder=os.path.join(basedir, 'static'),
@@ -137,21 +138,27 @@ def login():
     password = data.get("password")
     
     # 1. Check Admin Collection
-    admin = db.admins.find_one({"email": email, "password": password})
+    admin = db.admins.find_one({"email": email})
     if admin:
-        session['user_id'] = str(admin["_id"])
-        session['role'] = "admin"
-        session['username'] = "Administrator"
-        return jsonify({"message": "Admin Login Success", "role": "admin"})
+        stored_pwd = admin.get("password", "")
+        is_valid = check_password_hash(stored_pwd, password) if stored_pwd.startswith(("pbkdf2:", "scrypt:")) else stored_pwd == password
+        if is_valid:
+            session['user_id'] = str(admin["_id"])
+            session['role'] = "admin"
+            session['username'] = "Administrator"
+            return jsonify({"message": "Admin Login Success", "role": "admin"})
         
     # 2. Check Student Collection
-    student = db.students.find_one({"email": email, "password": password})
+    student = db.students.find_one({"email": email})
     if student:
-        session['user_id'] = str(student["_id"])
-        session['role'] = "student"
-        session['username'] = student.get("name", "Student")
-        session['ktu_id'] = student.get("ktu_id")
-        return jsonify({"message": "Student Login Success", "role": "student"})
+        stored_pwd = student.get("password", "")
+        is_valid = check_password_hash(stored_pwd, password) if stored_pwd.startswith(("pbkdf2:", "scrypt:")) else stored_pwd == password
+        if is_valid:
+            session['user_id'] = str(student["_id"])
+            session['role'] = "student"
+            session['username'] = student.get("name", "Student")
+            session['ktu_id'] = student.get("ktu_id")
+            return jsonify({"message": "Student Login Success", "role": "student"})
 
     return jsonify({"error": "Invalid credentials"}), 401
 
@@ -172,7 +179,7 @@ def signup():
     new_student = {
         "ktu_id": ktu_id,
         "email": email,
-        "password": password, # In a real app, hash this!
+        "password": generate_password_hash(password),
         "name": name,
         "branch": branch,
         "year": year,
